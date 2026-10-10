@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: vaccination-pet-api
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pet_vaccination}
+    username: ${SPRING_DATASOURCE_USERNAME:pet_app}
+    password: ${SPRING_DATASOURCE_PASSWORD:pet_app}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: ${APP_PORT:8080}
