@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM eclipse-temurin:17-jdk-jammy AS build
 
 WORKDIR /workspace
 
@@ -15,12 +15,12 @@ COPY src/ src/
 RUN ./mvnw clean package -DskipTests
 
 
-FROM eclipse-temurin:17-jre-alpine AS runtime
+FROM eclipse-temurin:17-jre-jammy AS runtime
 
 WORKDIR /app
 
-RUN addgroup -S spring \
-    && adduser -S spring -G spring
+RUN groupadd --system spring \
+    && useradd --system --gid spring --no-create-home spring
 
 COPY --from=build \
     --chown=spring:spring \
