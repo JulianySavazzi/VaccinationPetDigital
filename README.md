@@ -2,6 +2,7 @@
 digital vaccination pet using spring boot 3 and java 17
 
 ## Structure
+```
 com.juliany.vaccinationpet
 ├── controller
 │   ├── PetController
@@ -27,9 +28,10 @@ com.juliany.vaccinationpet
 │   ├── PetService
 │   └── VaccinationService
 └── PetVaccinationApplication
+````
 
 ## Endpoints
-
+```
 POST   /api/v1/pets
 GET    /api/v1/pets
 GET    /api/v1/pets/{id}
@@ -41,6 +43,7 @@ GET    /api/v1/pets/{petId}/vaccinations
 GET    /api/v1/vaccinations/{id}
 PUT    /api/v1/vaccinations/{id}
 DELETE /api/v1/vaccinations/{id}
+````
 
 ## Development flow
 Spring Initializr
