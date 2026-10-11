@@ -42,5 +42,113 @@ services:
       db:
         condition: service_healthy
 
+  app-dev:
+    profiles: [ "dev" ]
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        SPRING_DATASOURCE_URL=jdbc:postgresql://db-test:5432/pet_vaccination_test \
+        SPRING_DATASOURCE_USERNAME=pet_test \
+        SPRING_DATASOURCE_PASSWORD=pet_test \
+        SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop \
+        ./mvnw test
+        exec ./mvnw spring-boot:run
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-pet_vaccination}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-pet_app}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-pet_app}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${JPA_DDL_AUTO:-update}
+      SPRING_JPA_OPEN_IN_VIEW: "false"
+
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+    volumes:
+      - maven_repository:/root/.m2
+      - development_target:/workspace/target
+
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /workspace/src
+          initial_sync: true
+        - action: sync+restart
+          path: ./pom.xml
+          target: /workspace/pom.xml
+          initial_sync: true
+        - action: sync+restart
+          path: ./mvnw
+          target: /workspace/mvnw
+          initial_sync: true
+        - action: sync+restart
+          path: ./.mvn
+          target: /workspace/.mvn
+          initial_sync: true
+
+    depends_on:
+      db:
+        condition: service_healthy
+      db-test:
+        condition: service_healthy
+
+  db-test:
+    image: postgres:16-alpine
+    profiles: [ "test", "dev" ]
+
+    environment:
+      POSTGRES_DB: pet_vaccination_test
+      POSTGRES_USER: pet_test
+      POSTGRES_PASSWORD: pet_test
+
+    tmpfs:
+      - /var/lib/postgresql/data
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  test:
+    profiles: [ "test" ]
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-test:5432/pet_vaccination_test
+      SPRING_DATASOURCE_USERNAME: pet_test
+      SPRING_DATASOURCE_PASSWORD: pet_test
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_OPEN_IN_VIEW: "false"
+
+    volumes:
+      - ./src:/workspace/src:ro
+      - ./pom.xml:/workspace/pom.xml:ro
+      - ./mvnw:/workspace/mvnw:ro
+      - ./.mvn:/workspace/.mvn:ro
+      - maven_repository:/root/.m2
+      - test_target:/workspace/target
+
+    depends_on:
+      db-test:
+        condition: service_healthy
+
 volumes:
   postgres_data:
+  maven_repository:
+  development_target:
+  test_target:

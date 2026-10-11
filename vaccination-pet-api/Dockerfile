@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM eclipse-temurin:17-jdk-jammy AS build
+FROM eclipse-temurin:17-jdk-jammy AS workspace
 
 WORKDIR /workspace
 
@@ -11,6 +11,19 @@ RUN chmod +x mvnw \
     && ./mvnw dependency:go-offline
 
 COPY src/ src/
+
+
+FROM workspace AS test
+
+CMD ["./mvnw", "test"]
+
+
+FROM workspace AS development
+
+CMD ["./mvnw", "spring-boot:run"]
+
+
+FROM workspace AS build
 
 RUN ./mvnw clean package -DskipTests
 
