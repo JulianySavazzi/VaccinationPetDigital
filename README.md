@@ -75,7 +75,13 @@ docker compose logs app
 # Tests run against db-test before the API starts or restarts
 # Stop the packaged app first if it is already using port 8080
 docker compose stop app
+# Dev containers
 docker compose --profile dev up --watch app-dev
+
+## If network error, using command bellow to remove old containers
+docker compose \
+  --profile dev \
+  rm -s -f app-dev db-test
 
 # Run tests with Docker (Java and Maven are not required on the host)
 docker compose \
