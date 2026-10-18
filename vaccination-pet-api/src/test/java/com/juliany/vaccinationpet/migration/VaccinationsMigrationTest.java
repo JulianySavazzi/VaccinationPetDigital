@@ -1,7 +1,6 @@
 package com.juliany.vaccinationpet.migration;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -122,7 +121,7 @@ class VaccinationsMigrationTest {
             "Luna",
             "DOG",
             "FEMALE",
-            OffsetDateTime.parse("2022-05-10T00:00:00Z"),
+            LocalDate.parse("2022-05-10"),
             ownerJson
         );
     }

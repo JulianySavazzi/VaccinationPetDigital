@@ -1,6 +1,6 @@
 package com.juliany.vaccinationpet.migration;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,7 @@ class PetsMigrationTest {
             "Luna",
             "DOG",
             "FEMALE",
-            OffsetDateTime.parse("2022-05-10T00:00:00Z"),
+            LocalDate.parse("2022-05-10"),
             ownerJson
         );
 
@@ -56,6 +56,7 @@ class PetsMigrationTest {
                 name,
                 species,
                 sex,
+                birthdate,
                 owner ->> 'name' AS owner_name,
                 owner ->> 'contact' AS owner_contact,
                 created_at,
@@ -70,6 +71,8 @@ class PetsMigrationTest {
         assertThat(pet.get("name")).isEqualTo("Luna");
         assertThat(pet.get("species")).isEqualTo("DOG");
         assertThat(pet.get("sex")).isEqualTo("FEMALE");
+        assertThat(((java.sql.Date) pet.get("birthdate")).toLocalDate())
+            .isEqualTo(LocalDate.parse("2022-05-10"));
         assertThat(pet.get("owner_name")).isEqualTo("Juliany");
         assertThat(pet.get("owner_contact")).isEqualTo("juliany@email.com");
         assertThat(pet.get("created_at")).isNotNull();
@@ -98,10 +101,40 @@ class PetsMigrationTest {
             "Luna",
             "DOG",
             "FEMALE",
-            OffsetDateTime.parse("2022-05-10T00:00:00Z"),
+            LocalDate.parse("2022-05-10"),
             ownerWithoutContact
         ))
             .isInstanceOf(DataIntegrityViolationException.class)
             .hasMessageContaining("chk_pets_owner");
+    }
+
+    @Test
+    void shouldRejectPetWithInvalidSex() {
+        String ownerJson = """
+            {
+                "name": "Juliany",
+                "contact": "juliany@email.com"
+            }
+            """;
+
+        assertThatThrownBy(() -> jdbcTemplate.update(
+            """
+            INSERT INTO pets (
+                name,
+                species,
+                sex,
+                birthdate,
+                owner
+            )
+            VALUES (?, ?, ?, ?, CAST(? AS JSONB))
+            """,
+            "Luna",
+            "DOG",
+            "INVALID",
+            LocalDate.parse("2022-05-10"),
+            ownerJson
+        ))
+            .isInstanceOf(DataIntegrityViolationException.class)
+            .hasMessageContaining("chk_pets_sex");
     }
 }

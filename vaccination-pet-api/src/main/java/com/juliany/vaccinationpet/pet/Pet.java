@@ -2,6 +2,8 @@ package com.juliany.vaccinationpet.pet;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,6 +17,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -35,13 +38,13 @@ public class Pet {
     @Column(name = "species", nullable = false, length = 50)
     private String species;
 
-    @Size(max = 10)
+    @Enumerated(EnumType.STRING)
     @Column(name = "sex", length = 10)
-    private String sex;
+    private Sex sex;
 
     @NotNull
     @Column(name = "birthdate", nullable = false)
-    private OffsetDateTime birthdate;
+    private LocalDate birthdate;
 
     @Valid
     @NotNull
@@ -60,7 +63,7 @@ public class Pet {
     protected Pet() {
     }
 
-    public Pet(String name, String species, String sex, OffsetDateTime birthdate, Owner owner) {
+    public Pet(String name, String species, Sex sex, LocalDate birthdate, Owner owner) {
         this.name = name;
         this.species = species;
         this.sex = sex;
@@ -80,11 +83,11 @@ public class Pet {
         return species;
     }
 
-    public String getSex() {
+    public Sex getSex() {
         return sex;
     }
 
-    public OffsetDateTime getBirthdate() {
+    public LocalDate getBirthdate() {
         return birthdate;
     }
 
@@ -108,11 +111,11 @@ public class Pet {
         this.species = species;
     }
 
-    public void setSex(String sex) {
+    public void setSex(Sex sex) {
         this.sex = sex;
     }
 
-    public void setBirthdate(OffsetDateTime birthdate) {
+    public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
     }
 
