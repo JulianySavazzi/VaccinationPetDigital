@@ -1,4 +1,4 @@
-package com.juliany.vaccinationpet.pet;
+package com.juliany.vaccinationpet.entity;
 
 import jakarta.validation.constraints.NotBlank;
 

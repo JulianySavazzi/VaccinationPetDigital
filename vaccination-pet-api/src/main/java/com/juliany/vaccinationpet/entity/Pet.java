@@ -1,4 +1,4 @@
-package com.juliany.vaccinationpet.pet;
+package com.juliany.vaccinationpet.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
