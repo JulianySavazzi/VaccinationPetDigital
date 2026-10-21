@@ -1,6 +1,7 @@
 package com.juliany.vaccinationpet.service;
 
 import com.juliany.vaccinationpet.dto.CreateVaccinationRequest;
+import com.juliany.vaccinationpet.dto.PageResponse;
 import com.juliany.vaccinationpet.dto.VaccinationResponse;
 import com.juliany.vaccinationpet.entity.Owner;
 import com.juliany.vaccinationpet.entity.Pet;
@@ -15,6 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -79,26 +84,35 @@ class VaccinationServiceTest {
         Vaccination second = createVaccination(pet);
         VaccinationResponse firstResponse = createResponse(1L);
         VaccinationResponse secondResponse = createResponse(2L);
+        Pageable pageable = PageRequest.of(
+                0,
+                20,
+                Sort.by(Sort.Direction.ASC, "id")
+        );
         when(petRepository.findById(10L)).thenReturn(Optional.of(pet));
-        when(vaccinationRepository.findAllByPetIdOrderByIdAsc(10L))
-                .thenReturn(List.of(first, second));
+        when(vaccinationRepository.findAllByPetId(10L, pageable))
+                .thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
         when(vaccinationMapper.toResponse(first)).thenReturn(firstResponse);
         when(vaccinationMapper.toResponse(second)).thenReturn(secondResponse);
 
-        List<VaccinationResponse> responses = vaccinationService.findAllByPetId(10L);
+        PageResponse<VaccinationResponse> response = vaccinationService.findAllByPetId(10L, 1);
 
-        assertThat(responses).containsExactly(firstResponse, secondResponse);
+        assertThat(response.content()).containsExactly(firstResponse, secondResponse);
+        assertThat(response.page()).isEqualTo(1);
+        assertThat(response.size()).isEqualTo(20);
+        assertThat(response.totalElements()).isEqualTo(2);
+        assertThat(response.totalPages()).isEqualTo(1);
     }
 
     @Test
     void shouldNotListVaccinationsForUnknownPet() {
         when(petRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> vaccinationService.findAllByPetId(99L))
+        assertThatThrownBy(() -> vaccinationService.findAllByPetId(99L, 1))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessage("Pet not found with id: 99");
 
-        verify(vaccinationRepository, never()).findAllByPetIdOrderByIdAsc(any());
+        verify(vaccinationRepository, never()).findAllByPetId(any(), any());
     }
 
     @Test

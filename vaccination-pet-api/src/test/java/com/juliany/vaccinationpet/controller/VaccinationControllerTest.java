@@ -67,9 +67,13 @@ class VaccinationControllerTest {
             .andExpect(jsonPath("$.id").value(vaccinationId))
             .andExpect(jsonPath("$.petId").value(petId));
 
-        mockMvc.perform(get("/api/v1/pets/{petId}/vaccinations", petId))
+        mockMvc.perform(get("/api/v1/pets/{petId}/vaccinations", petId)
+                .param("page", "1"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(vaccinationId));
+            .andExpect(jsonPath("$.content[0].id").value(vaccinationId))
+            .andExpect(jsonPath("$.page").value(1))
+            .andExpect(jsonPath("$.size").value(20))
+            .andExpect(jsonPath("$.totalElements").value(1));
 
         mockMvc.perform(put("/api/v1/vaccinations/{id}", vaccinationId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -132,6 +136,45 @@ class VaccinationControllerTest {
         mockMvc.perform(delete("/api/v1/pets/{id}", petId))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.title").value("Data integrity violation"));
+    }
+
+    @Test
+    void shouldPaginateVaccinationsWithTwentyRecordsPerPage() throws Exception {
+        long petId = createPet();
+        for (int index = 1; index <= 21; index++) {
+            mockMvc.perform(post("/api/v1/pets/{petId}/vaccinations", petId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(createVaccinationJson("Vaccine " + index, "LOTE-" + index)))
+                .andExpect(status().isCreated());
+        }
+
+        mockMvc.perform(get("/api/v1/pets/{petId}/vaccinations", petId)
+                .param("page", "1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content.length()").value(20))
+            .andExpect(jsonPath("$.page").value(1))
+            .andExpect(jsonPath("$.size").value(20))
+            .andExpect(jsonPath("$.totalElements").value(21))
+            .andExpect(jsonPath("$.totalPages").value(2))
+            .andExpect(jsonPath("$.first").value(true))
+            .andExpect(jsonPath("$.last").value(false));
+
+        mockMvc.perform(get("/api/v1/pets/{petId}/vaccinations", petId)
+                .param("page", "2"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.page").value(2))
+            .andExpect(jsonPath("$.first").value(false))
+            .andExpect(jsonPath("$.last").value(true));
+    }
+
+    @Test
+    void shouldRejectPageZero() throws Exception {
+        long petId = createPet();
+
+        mockMvc.perform(get("/api/v1/pets/{petId}/vaccinations", petId)
+                .param("page", "0"))
+            .andExpect(status().isBadRequest());
     }
 
     private long createPet() throws Exception {

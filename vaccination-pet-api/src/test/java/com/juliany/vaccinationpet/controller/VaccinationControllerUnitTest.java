@@ -1,6 +1,7 @@
 package com.juliany.vaccinationpet.controller;
 
 import com.juliany.vaccinationpet.dto.CreateVaccinationRequest;
+import com.juliany.vaccinationpet.dto.PageResponse;
 import com.juliany.vaccinationpet.dto.VaccinationResponse;
 import com.juliany.vaccinationpet.service.VaccinationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,14 +50,16 @@ class VaccinationControllerUnitTest {
 
     @Test
     void shouldReturnAllVaccinationsForPet() {
-        List<VaccinationResponse> expectedResponses = List.of(createResponse());
-        when(vaccinationService.findAllByPetId(10L)).thenReturn(expectedResponses);
+        PageResponse<VaccinationResponse> expectedResponse = new PageResponse<>(
+                List.of(createResponse()), 1, 20, 1, 1, true, true
+        );
+        when(vaccinationService.findAllByPetId(10L, 1)).thenReturn(expectedResponse);
 
-        ResponseEntity<List<VaccinationResponse>> response =
-                vaccinationController.findAllByPetId(10L);
+        ResponseEntity<PageResponse<VaccinationResponse>> response =
+                vaccinationController.findAllByPetId(10L, 1);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(expectedResponses);
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
     @Test

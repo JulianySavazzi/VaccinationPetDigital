@@ -52,9 +52,12 @@ class PetControllerTest {
             .andExpect(jsonPath("$.id").value(petId))
             .andExpect(jsonPath("$.name").value("Luna"));
 
-        mockMvc.perform(get("/api/v1/pets"))
+        mockMvc.perform(get("/api/v1/pets").param("page", "1"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(petId));
+            .andExpect(jsonPath("$.content[0].id").value(petId))
+            .andExpect(jsonPath("$.page").value(1))
+            .andExpect(jsonPath("$.size").value(20))
+            .andExpect(jsonPath("$.totalElements").value(1));
 
         mockMvc.perform(put("/api/v1/pets/{id}", petId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -100,6 +103,39 @@ class PetControllerTest {
         mockMvc.perform(get("/api/v1/pets/{id}", -1L))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.detail").value("Pet not found with id: -1"));
+    }
+
+    @Test
+    void shouldPaginatePetsWithTwentyRecordsPerPage() throws Exception {
+        for (int index = 1; index <= 21; index++) {
+            mockMvc.perform(post("/api/v1/pets")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(createPetJson("Pet " + index, "Juliany")))
+                .andExpect(status().isCreated());
+        }
+
+        mockMvc.perform(get("/api/v1/pets").param("page", "1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content.length()").value(20))
+            .andExpect(jsonPath("$.page").value(1))
+            .andExpect(jsonPath("$.size").value(20))
+            .andExpect(jsonPath("$.totalElements").value(21))
+            .andExpect(jsonPath("$.totalPages").value(2))
+            .andExpect(jsonPath("$.first").value(true))
+            .andExpect(jsonPath("$.last").value(false));
+
+        mockMvc.perform(get("/api/v1/pets").param("page", "2"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.page").value(2))
+            .andExpect(jsonPath("$.first").value(false))
+            .andExpect(jsonPath("$.last").value(true));
+    }
+
+    @Test
+    void shouldRejectPageZero() throws Exception {
+        mockMvc.perform(get("/api/v1/pets").param("page", "0"))
+            .andExpect(status().isBadRequest());
     }
 
     private String createPetJson(String petName, String ownerName) {

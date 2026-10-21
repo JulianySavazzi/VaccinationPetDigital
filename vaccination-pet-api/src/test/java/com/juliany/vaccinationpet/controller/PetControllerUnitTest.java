@@ -1,6 +1,7 @@
 package com.juliany.vaccinationpet.controller;
 
 import com.juliany.vaccinationpet.dto.CreatePetRequest;
+import com.juliany.vaccinationpet.dto.PageResponse;
 import com.juliany.vaccinationpet.dto.PetResponse;
 import com.juliany.vaccinationpet.entity.Sex;
 import com.juliany.vaccinationpet.service.PetService;
@@ -49,13 +50,15 @@ class PetControllerUnitTest {
 
     @Test
     void shouldReturnAllPets() {
-        List<PetResponse> expectedResponses = List.of(createResponse());
-        when(petService.findAll()).thenReturn(expectedResponses);
+        PageResponse<PetResponse> expectedResponse = new PageResponse<>(
+                List.of(createResponse()), 1, 20, 1, 1, true, true
+        );
+        when(petService.findAll(1)).thenReturn(expectedResponse);
 
-        ResponseEntity<List<PetResponse>> response = petController.findAll();
+        ResponseEntity<PageResponse<PetResponse>> response = petController.findAll(1);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(expectedResponses);
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
     @Test

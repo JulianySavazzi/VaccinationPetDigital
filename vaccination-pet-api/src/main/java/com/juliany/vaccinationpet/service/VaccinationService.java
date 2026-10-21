@@ -1,6 +1,7 @@
 package com.juliany.vaccinationpet.service;
 
 import com.juliany.vaccinationpet.dto.CreateVaccinationRequest;
+import com.juliany.vaccinationpet.dto.PageResponse;
 import com.juliany.vaccinationpet.dto.VaccinationResponse;
 import com.juliany.vaccinationpet.entity.Pet;
 import com.juliany.vaccinationpet.entity.Vaccination;
@@ -8,13 +9,17 @@ import com.juliany.vaccinationpet.exception.ResourceNotFoundException;
 import com.juliany.vaccinationpet.mapper.VaccinationMapper;
 import com.juliany.vaccinationpet.repository.PetRepository;
 import com.juliany.vaccinationpet.repository.VaccinationRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 public class VaccinationService {
+
+    private static final int PAGE_SIZE = 20;
 
     private final VaccinationRepository vaccinationRepository;
     private final PetRepository petRepository;
@@ -39,12 +44,17 @@ public class VaccinationService {
     }
 
     @Transactional(readOnly = true)
-    public List<VaccinationResponse> findAllByPetId(Long petId) {
+    public PageResponse<VaccinationResponse> findAllByPetId(Long petId, int pageNumber) {
         findPetById(petId);
-        return vaccinationRepository.findAllByPetIdOrderByIdAsc(petId)
-                .stream()
-                .map(vaccinationMapper::toResponse)
-                .toList();
+        Pageable pageable = PageRequest.of(
+                pageNumber - 1,
+                PAGE_SIZE,
+                Sort.by(Sort.Direction.ASC, "id")
+        );
+        Page<VaccinationResponse> vaccinations =
+                vaccinationRepository.findAllByPetId(petId, pageable)
+                        .map(vaccinationMapper::toResponse);
+        return PageResponse.from(vaccinations);
     }
 
     @Transactional(readOnly = true)

@@ -1,6 +1,7 @@
 package com.juliany.vaccinationpet.service;
 
 import com.juliany.vaccinationpet.dto.CreatePetRequest;
+import com.juliany.vaccinationpet.dto.PageResponse;
 import com.juliany.vaccinationpet.dto.PetResponse;
 import com.juliany.vaccinationpet.entity.Owner;
 import com.juliany.vaccinationpet.entity.Pet;
@@ -13,6 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
@@ -61,15 +65,26 @@ class PetServiceTest {
         Pet secondPet = createPet();
         PetResponse firstResponse = createResponse(1L, "Luna");
         PetResponse secondResponse = createResponse(2L, "Mel");
-        Sort idAscending = Sort.by(Sort.Direction.ASC, "id");
-        when(petRepository.findAll(idAscending)).thenReturn(List.of(firstPet, secondPet));
+        Pageable pageable = PageRequest.of(
+                0,
+                20,
+                Sort.by(Sort.Direction.ASC, "id")
+        );
+        when(petRepository.findAll(pageable))
+                .thenReturn(new PageImpl<>(List.of(firstPet, secondPet), pageable, 2));
         when(petMapper.toResponse(firstPet)).thenReturn(firstResponse);
         when(petMapper.toResponse(secondPet)).thenReturn(secondResponse);
 
-        List<PetResponse> responses = petService.findAll();
+        PageResponse<PetResponse> response = petService.findAll(1);
 
-        assertThat(responses).containsExactly(firstResponse, secondResponse);
-        verify(petRepository).findAll(idAscending);
+        assertThat(response.content()).containsExactly(firstResponse, secondResponse);
+        assertThat(response.page()).isEqualTo(1);
+        assertThat(response.size()).isEqualTo(20);
+        assertThat(response.totalElements()).isEqualTo(2);
+        assertThat(response.totalPages()).isEqualTo(1);
+        assertThat(response.first()).isTrue();
+        assertThat(response.last()).isTrue();
+        verify(petRepository).findAll(pageable);
     }
 
     @Test
