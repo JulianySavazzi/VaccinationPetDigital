@@ -2,9 +2,11 @@ package com.juliany.vaccinationpet.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 
+@Schema(description = "Patch parcial de vacinação. Propriedades ausentes não são alteradas.")
 public class PatchVaccinationRequest {
 
     private String vaccineName;
@@ -18,6 +20,7 @@ public class PatchVaccinationRequest {
     private LocalDate nextVaccinationDate;
     private boolean nextVaccinationDateProvided;
 
+    @Schema(description = "Nome da vacina; se enviado, não pode ser nulo ou vazio.", example = "Antirrábica")
     public String getVaccineName() {
         return vaccineName;
     }
@@ -33,6 +36,7 @@ public class PatchVaccinationRequest {
         return vaccineNameProvided;
     }
 
+    @Schema(description = "Número do lote; se enviado, não pode ser nulo ou vazio.", example = "LOTE-001")
     public String getVaccineBatchNumber() {
         return vaccineBatchNumber;
     }
@@ -48,6 +52,7 @@ public class PatchVaccinationRequest {
         return vaccineBatchNumberProvided;
     }
 
+    @Schema(description = "Data da aplicação; se enviada, não pode ser nula.", example = "2026-01-15")
     public LocalDate getApplicationDate() {
         return applicationDate;
     }
@@ -63,6 +68,7 @@ public class PatchVaccinationRequest {
         return applicationDateProvided;
     }
 
+    @Schema(description = "Data de validade; se enviada, não pode ser nula e deve ser igual ou posterior à aplicação.", example = "2027-01-15")
     public LocalDate getExpirationDate() {
         return expirationDate;
     }
@@ -78,6 +84,11 @@ public class PatchVaccinationRequest {
         return expirationDateProvided;
     }
 
+    @Schema(
+            description = "Próxima vacinação. Se omitida, mantém o valor atual; null limpa a data.",
+            nullable = true,
+            example = "2027-01-15"
+    )
     public LocalDate getNextVaccinationDate() {
         return nextVaccinationDate;
     }

@@ -3,9 +3,11 @@ package com.juliany.vaccinationpet.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.juliany.vaccinationpet.entity.Sex;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 
+@Schema(description = "Patch parcial de pet. Propriedades ausentes não são alteradas.")
 public class PatchPetRequest {
 
     private String name;
@@ -19,6 +21,7 @@ public class PatchPetRequest {
     private PatchOwnerRequest owner;
     private boolean ownerProvided;
 
+    @Schema(description = "Nome do pet. Se enviado, não pode ser nulo ou vazio.", example = "Mel")
     public String getName() {
         return name;
     }
@@ -34,6 +37,7 @@ public class PatchPetRequest {
         return nameProvided;
     }
 
+    @Schema(description = "Espécie do pet. Se enviado, não pode ser nula ou vazia.", example = "DOG")
     public String getSpecies() {
         return species;
     }
@@ -49,6 +53,7 @@ public class PatchPetRequest {
         return speciesProvided;
     }
 
+    @Schema(description = "Sexo do pet; null limpa o valor.", nullable = true, example = "FEMALE")
     public Sex getSex() {
         return sex;
     }
@@ -64,6 +69,7 @@ public class PatchPetRequest {
         return sexProvided;
     }
 
+    @Schema(description = "Data de nascimento; se enviada, não pode ser nula nem futura.", example = "2022-05-10")
     public LocalDate getBirthdate() {
         return birthdate;
     }
@@ -79,6 +85,7 @@ public class PatchPetRequest {
         return birthdateProvided;
     }
 
+    @Schema(description = "Propriedades do tutor atualizadas individualmente.")
     public PatchOwnerRequest getOwner() {
         return owner;
     }
@@ -101,6 +108,7 @@ public class PatchPetRequest {
         private String contact;
         private boolean contactProvided;
 
+    @Schema(description = "Nome do tutor. Se enviado, não pode ser nulo ou vazio.", example = "Maria")
         public String getName() {
             return name;
         }
@@ -116,6 +124,7 @@ public class PatchPetRequest {
             return nameProvided;
         }
 
+        @Schema(description = "Contato do tutor. Se enviado, não pode ser nulo ou vazio.", example = "maria@example.com")
         public String getContact() {
             return contact;
         }

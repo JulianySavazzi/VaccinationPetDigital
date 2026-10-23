@@ -16,5 +16,12 @@ spring:
       hibernate:
         format_sql: true
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: ${SPRINGDOC_SWAGGER_UI_ENABLED:true}
+  api-docs:
+    enabled: ${SPRINGDOC_API_DOCS_ENABLED:true}
+
 server:
   port: ${APP_PORT:8080}

@@ -54,6 +54,13 @@ remain unchanged; explicit `null` clears nullable fields, while `null` for
 required fields is rejected. Nested owner properties are patched independently,
 so sending only `owner.name` preserves `owner.contact`.
 
+## API documentation
+
+When the application is running, Swagger UI is available at
+`http://localhost:8080/swagger-ui.html` and the OpenAPI JSON document at
+`http://localhost:8080/v3/api-docs`. Both can be disabled with
+`SPRINGDOC_SWAGGER_UI_ENABLED=false` and `SPRINGDOC_API_DOCS_ENABLED=false`.
+
 ## Development flow
 Spring Initializr
       ↓
