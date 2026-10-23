@@ -58,7 +58,7 @@ services:
         SPRING_DATASOURCE_URL=jdbc:postgresql://db-test:5432/pet_vaccination_test \
         SPRING_DATASOURCE_USERNAME=pet_test \
         SPRING_DATASOURCE_PASSWORD=pet_test \
-        SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop \
+        SPRING_JPA_HIBERNATE_DDL_AUTO=validate \
         ./mvnw test
         exec ./mvnw spring-boot:run
 
