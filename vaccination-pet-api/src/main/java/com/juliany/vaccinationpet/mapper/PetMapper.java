@@ -22,6 +22,7 @@ public class PetMapper {
     public PetResponse toResponse(Pet pet) {
         return new PetResponse(
                 pet.getId(),
+                pet.getVersion(),
                 pet.getName(),
                 pet.getSpecies(),
                 pet.getSex(),

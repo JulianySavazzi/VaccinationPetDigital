@@ -107,6 +107,7 @@ class VaccinationControllerUnitTest {
     private VaccinationResponse createResponse() {
         return new VaccinationResponse(
                 1L,
+                0L,
                 10L,
                 "Antirrabica",
                 "LOTE-001",

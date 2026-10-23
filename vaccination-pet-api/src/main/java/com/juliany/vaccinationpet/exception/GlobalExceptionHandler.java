@@ -2,6 +2,7 @@ package com.juliany.vaccinationpet.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +77,21 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT,
                 "Data integrity violation",
                 "The operation conflicts with data already stored.",
+                request
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ProblemDetail> handleOptimisticLockingFailure(
+            OptimisticLockingFailureException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem = createProblem(
+                HttpStatus.CONFLICT,
+                "Concurrent modification",
+                "This resource was modified by another request. Reload it and retry your change.",
                 request
         );
 

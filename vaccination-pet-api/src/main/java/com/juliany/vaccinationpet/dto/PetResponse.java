@@ -7,6 +7,7 @@ import java.time.OffsetDateTime;
 
 public record PetResponse(
         Long id,
+        Long version,
         String name,
         String species,
         Sex sex,

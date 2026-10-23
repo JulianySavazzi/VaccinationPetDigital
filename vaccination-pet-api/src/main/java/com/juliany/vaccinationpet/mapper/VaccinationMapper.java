@@ -23,6 +23,7 @@ public class VaccinationMapper {
     public VaccinationResponse toResponse(Vaccination vaccination) {
         return new VaccinationResponse(
                 vaccination.getId(),
+                vaccination.getVersion(),
                 vaccination.getPet().getId(),
                 vaccination.getVaccineName(),
                 vaccination.getVaccineBatchNumber(),

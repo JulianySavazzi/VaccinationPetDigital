@@ -106,6 +106,7 @@ class PetControllerUnitTest {
     private PetResponse createResponse() {
         return new PetResponse(
                 1L,
+                0L,
                 "Luna",
                 "DOG",
                 Sex.FEMALE,

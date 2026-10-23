@@ -172,6 +172,7 @@ class PetServiceTest {
     private PetResponse createResponse(Long id, String name) {
         return new PetResponse(
                 id,
+                0L,
                 name,
                 "DOG",
                 Sex.FEMALE,

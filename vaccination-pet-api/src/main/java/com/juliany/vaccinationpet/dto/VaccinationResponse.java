@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 
 public record VaccinationResponse(
         Long id,
+        Long version,
         Long petId,
         String vaccineName,
         String vaccineBatchNumber,

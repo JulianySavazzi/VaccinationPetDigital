@@ -209,6 +209,7 @@ class VaccinationServiceTest {
     private VaccinationResponse createResponse(Long id) {
         return new VaccinationResponse(
                 id,
+                0L,
                 10L,
                 "Antirrabica",
                 "LOTE-001",
