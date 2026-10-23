@@ -2,6 +2,7 @@ package com.juliany.vaccinationpet.service;
 
 import com.juliany.vaccinationpet.dto.CreateVaccinationRequest;
 import com.juliany.vaccinationpet.dto.PageResponse;
+import com.juliany.vaccinationpet.dto.PatchVaccinationRequest;
 import com.juliany.vaccinationpet.dto.VaccinationResponse;
 import com.juliany.vaccinationpet.entity.Owner;
 import com.juliany.vaccinationpet.entity.Pet;
@@ -44,6 +45,9 @@ class VaccinationServiceTest {
 
     @Mock
     private VaccinationMapper vaccinationMapper;
+
+    @Mock
+    private RequestValidationService requestValidationService;
 
     @InjectMocks
     private VaccinationService vaccinationService;
@@ -138,7 +142,8 @@ class VaccinationServiceTest {
 
     @Test
     void shouldUpdateVaccination() {
-        CreateVaccinationRequest request = createRequest();
+        PatchVaccinationRequest request = new PatchVaccinationRequest();
+        request.setVaccineName("Antirrabica");
         Vaccination vaccination = createVaccination(createPet());
         VaccinationResponse expectedResponse = createResponse(1L);
         when(vaccinationRepository.findById(1L)).thenReturn(Optional.of(vaccination));
@@ -148,7 +153,9 @@ class VaccinationServiceTest {
         VaccinationResponse response = vaccinationService.update(1L, request);
 
         assertThat(response).isEqualTo(expectedResponse);
-        verify(vaccinationMapper).updateEntity(vaccination, request);
+        verify(requestValidationService).validate(any(CreateVaccinationRequest.class));
+        verify(vaccinationMapper).updateEntity(org.mockito.ArgumentMatchers.eq(vaccination),
+                any(CreateVaccinationRequest.class));
         verify(vaccinationRepository).saveAndFlush(vaccination);
     }
 

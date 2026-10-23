@@ -9,14 +9,17 @@ com.juliany.vaccinationpet
 │   └── VaccinationController
 ├── dto
 │   ├── CreatePetRequest
+│   ├── PatchPetRequest
 │   ├── PetResponse
 │   ├── CreateVaccinationRequest
+│   ├── PatchVaccinationRequest
 │   └── VaccinationResponse
 ├── entity
 │   ├── Pet
 │   └── Vaccination
 ├── exception
 │   ├── ResourceNotFoundException
+│   ├── RequestValidationException
 │   └── GlobalExceptionHandler
 ├── mapper
 │   ├── PetMapper
@@ -26,7 +29,8 @@ com.juliany.vaccinationpet
 │   └── VaccinationRepository
 ├── service
 │   ├── PetService
-│   └── VaccinationService
+│   ├── VaccinationService
+│   └── RequestValidationService
 └── PetVaccinationApplication
 ````
 
@@ -35,15 +39,20 @@ com.juliany.vaccinationpet
 POST   /api/v1/pets
 GET    /api/v1/pets
 GET    /api/v1/pets/{id}
-PUT    /api/v1/pets/{id}
+PATCH  /api/v1/pets/{id}
 DELETE /api/v1/pets/{id}
 
 POST   /api/v1/pets/{petId}/vaccinations
 GET    /api/v1/pets/{petId}/vaccinations
 GET    /api/v1/vaccinations/{id}
-PUT    /api/v1/vaccinations/{id}
+PATCH  /api/v1/vaccinations/{id}
 DELETE /api/v1/vaccinations/{id}
 ````
+
+The PATCH endpoints accept `application/merge-patch+json`. Omitted properties
+remain unchanged; explicit `null` clears nullable fields, while `null` for
+required fields is rejected. Nested owner properties are patched independently,
+so sending only `owner.name` preserves `owner.contact`.
 
 ## Development flow
 Spring Initializr

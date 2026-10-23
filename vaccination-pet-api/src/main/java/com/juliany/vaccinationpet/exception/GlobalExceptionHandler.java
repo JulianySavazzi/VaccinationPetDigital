@@ -53,6 +53,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(problem);
     }
 
+    @ExceptionHandler(RequestValidationException.class)
+    public ResponseEntity<ProblemDetail> handleRequestValidation(
+            RequestValidationException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem = createProblem(
+                HttpStatus.BAD_REQUEST,
+                "Validation failed",
+                "One or more fields are invalid.",
+                request
+        );
+        problem.setProperty("fieldErrors", exception.getFieldErrors());
+        return ResponseEntity.badRequest().body(problem);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ProblemDetail> handleUnreadableMessage(
             HttpMessageNotReadableException exception,

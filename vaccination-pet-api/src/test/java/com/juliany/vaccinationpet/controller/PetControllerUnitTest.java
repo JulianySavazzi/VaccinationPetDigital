@@ -2,6 +2,7 @@ package com.juliany.vaccinationpet.controller;
 
 import com.juliany.vaccinationpet.dto.CreatePetRequest;
 import com.juliany.vaccinationpet.dto.PageResponse;
+import com.juliany.vaccinationpet.dto.PatchPetRequest;
 import com.juliany.vaccinationpet.dto.PetResponse;
 import com.juliany.vaccinationpet.entity.Sex;
 import com.juliany.vaccinationpet.service.PetService;
@@ -74,7 +75,8 @@ class PetControllerUnitTest {
 
     @Test
     void shouldUpdatePet() {
-        CreatePetRequest request = createRequest();
+        PatchPetRequest request = new PatchPetRequest();
+        request.setName("Mel");
         PetResponse expectedResponse = createResponse();
         when(petService.update(1L, request)).thenReturn(expectedResponse);
 

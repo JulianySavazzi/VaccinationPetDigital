@@ -2,6 +2,7 @@ package com.juliany.vaccinationpet.service;
 
 import com.juliany.vaccinationpet.dto.CreateVaccinationRequest;
 import com.juliany.vaccinationpet.dto.PageResponse;
+import com.juliany.vaccinationpet.dto.PatchVaccinationRequest;
 import com.juliany.vaccinationpet.dto.VaccinationResponse;
 import com.juliany.vaccinationpet.entity.Pet;
 import com.juliany.vaccinationpet.entity.Vaccination;
@@ -24,15 +25,18 @@ public class VaccinationService {
     private final VaccinationRepository vaccinationRepository;
     private final PetRepository petRepository;
     private final VaccinationMapper vaccinationMapper;
+    private final RequestValidationService requestValidationService;
 
     public VaccinationService(
             VaccinationRepository vaccinationRepository,
             PetRepository petRepository,
-            VaccinationMapper vaccinationMapper
+            VaccinationMapper vaccinationMapper,
+            RequestValidationService requestValidationService
     ) {
         this.vaccinationRepository = vaccinationRepository;
         this.petRepository = petRepository;
         this.vaccinationMapper = vaccinationMapper;
+        this.requestValidationService = requestValidationService;
     }
 
     @Transactional
@@ -63,9 +67,25 @@ public class VaccinationService {
     }
 
     @Transactional
-    public VaccinationResponse update(Long id, CreateVaccinationRequest request) {
+    public VaccinationResponse update(Long id, PatchVaccinationRequest patch) {
         Vaccination vaccination = findVaccinationById(id);
-        vaccinationMapper.updateEntity(vaccination, request);
+        CreateVaccinationRequest mergedRequest = new CreateVaccinationRequest(
+                patch.isVaccineNameProvided() ? patch.getVaccineName() : vaccination.getVaccineName(),
+                patch.isVaccineBatchNumberProvided()
+                        ? patch.getVaccineBatchNumber()
+                        : vaccination.getVaccineBatchNumber(),
+                patch.isApplicationDateProvided()
+                        ? patch.getApplicationDate()
+                        : vaccination.getApplicationDate(),
+                patch.isExpirationDateProvided()
+                        ? patch.getExpirationDate()
+                        : vaccination.getExpirationDate(),
+                patch.isNextVaccinationDateProvided()
+                        ? patch.getNextVaccinationDate()
+                        : vaccination.getNextVaccinationDate()
+        );
+        requestValidationService.validate(mergedRequest);
+        vaccinationMapper.updateEntity(vaccination, mergedRequest);
         Vaccination updatedVaccination = vaccinationRepository.saveAndFlush(vaccination);
         return vaccinationMapper.toResponse(updatedVaccination);
     }

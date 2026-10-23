@@ -2,6 +2,7 @@ package com.juliany.vaccinationpet.controller;
 
 import com.juliany.vaccinationpet.dto.CreateVaccinationRequest;
 import com.juliany.vaccinationpet.dto.PageResponse;
+import com.juliany.vaccinationpet.dto.PatchVaccinationRequest;
 import com.juliany.vaccinationpet.dto.VaccinationResponse;
 import com.juliany.vaccinationpet.service.VaccinationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,7 +76,8 @@ class VaccinationControllerUnitTest {
 
     @Test
     void shouldUpdateVaccination() {
-        CreateVaccinationRequest request = createRequest();
+        PatchVaccinationRequest request = new PatchVaccinationRequest();
+        request.setVaccineName("V10");
         VaccinationResponse expectedResponse = createResponse();
         when(vaccinationService.update(1L, request)).thenReturn(expectedResponse);
 

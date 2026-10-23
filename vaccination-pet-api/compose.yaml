@@ -4,12 +4,12 @@ services:
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-pet_vaccination}
-      POSTGRES_USER: ${POSTGRES_USER:-pet_app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pet_app}
+      POSTGRES_DB: ${POSTGRES_DB:?Defina POSTGRES_DB no arquivo .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Defina POSTGRES_USER no arquivo .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}
 
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT:-5432}"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -29,9 +29,9 @@ services:
     restart: unless-stopped
 
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-pet_vaccination}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-pet_app}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-pet_app}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?Defina POSTGRES_DB no arquivo .env}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?Defina POSTGRES_USER no arquivo .env}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${JPA_DDL_AUTO:-validate}
       SPRING_JPA_OPEN_IN_VIEW: "false"
 
@@ -63,9 +63,9 @@ services:
         exec ./mvnw spring-boot:run
 
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-pet_vaccination}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-pet_app}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-pet_app}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?Defina POSTGRES_DB no arquivo .env}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?Defina POSTGRES_USER no arquivo .env}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${JPA_DDL_AUTO:-validate}
       SPRING_JPA_OPEN_IN_VIEW: "false"
 

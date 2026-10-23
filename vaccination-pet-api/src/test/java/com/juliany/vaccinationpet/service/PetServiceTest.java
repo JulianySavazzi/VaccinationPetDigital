@@ -2,6 +2,7 @@ package com.juliany.vaccinationpet.service;
 
 import com.juliany.vaccinationpet.dto.CreatePetRequest;
 import com.juliany.vaccinationpet.dto.PageResponse;
+import com.juliany.vaccinationpet.dto.PatchPetRequest;
 import com.juliany.vaccinationpet.dto.PetResponse;
 import com.juliany.vaccinationpet.entity.Owner;
 import com.juliany.vaccinationpet.entity.Pet;
@@ -38,6 +39,9 @@ class PetServiceTest {
 
     @Mock
     private PetMapper petMapper;
+
+    @Mock
+    private RequestValidationService requestValidationService;
 
     @InjectMocks
     private PetService petService;
@@ -112,7 +116,8 @@ class PetServiceTest {
 
     @Test
     void shouldUpdatePet() {
-        CreatePetRequest request = createRequest();
+        PatchPetRequest request = new PatchPetRequest();
+        request.setName("Luna");
         Pet pet = createPet();
         PetResponse expectedResponse = createResponse(1L, "Luna");
         when(petRepository.findById(1L)).thenReturn(Optional.of(pet));
@@ -122,7 +127,9 @@ class PetServiceTest {
         PetResponse response = petService.update(1L, request);
 
         assertThat(response).isEqualTo(expectedResponse);
-        verify(petMapper).updateEntity(pet, request);
+        verify(requestValidationService).validate(org.mockito.ArgumentMatchers.any(CreatePetRequest.class));
+        verify(petMapper).updateEntity(org.mockito.ArgumentMatchers.eq(pet),
+                org.mockito.ArgumentMatchers.any(CreatePetRequest.class));
         verify(petRepository).saveAndFlush(pet);
     }
 

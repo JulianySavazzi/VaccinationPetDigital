@@ -41,17 +41,21 @@ class OptimisticLockingIntegrationTest {
     @Test
     void shouldIncrementVersionAfterSuccessfulUpdate() {
         Pet pet = createPersistedPet("Happy path");
-        assertThat(pet.getVersion()).isZero();
+        try {
+            assertThat(pet.getVersion()).isZero();
 
-        Pet updatedPet = transactionTemplate.execute(status -> {
-            Pet managedPet = petRepository.findById(pet.getId()).orElseThrow();
-            managedPet.setName("Updated pet");
-            return petRepository.saveAndFlush(managedPet);
-        });
+            Pet updatedPet = transactionTemplate.execute(status -> {
+                Pet managedPet = petRepository.findById(pet.getId()).orElseThrow();
+                managedPet.setName("Updated pet");
+                return petRepository.saveAndFlush(managedPet);
+            });
 
-        assertThat(updatedPet).isNotNull();
-        assertThat(updatedPet.getVersion()).isEqualTo(1L);
-        assertThat(updatedPet.getName()).isEqualTo("Updated pet");
+            assertThat(updatedPet).isNotNull();
+            assertThat(updatedPet.getVersion()).isEqualTo(1L);
+            assertThat(updatedPet.getName()).isEqualTo("Updated pet");
+        } finally {
+            deletePet(pet.getId());
+        }
     }
 
     @Test
@@ -97,6 +101,8 @@ class OptimisticLockingIntegrationTest {
         } finally {
             firstTransactionCommitted.countDown();
             executor.shutdownNow();
+            executor.awaitTermination(WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            deletePet(petId);
         }
     }
 
@@ -108,6 +114,10 @@ class OptimisticLockingIntegrationTest {
                 LocalDate.of(2022, 5, 10),
                 new Owner("Owner " + suffix, "owner@example.com")
         )));
+    }
+
+    private void deletePet(Long petId) {
+        transactionTemplate.executeWithoutResult(status -> petRepository.deleteById(petId));
     }
 
     private void await(CountDownLatch latch) {

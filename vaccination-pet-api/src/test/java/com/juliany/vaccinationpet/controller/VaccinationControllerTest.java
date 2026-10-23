@@ -15,11 +15,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.nullValue;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -75,14 +76,21 @@ class VaccinationControllerTest {
             .andExpect(jsonPath("$.size").value(20))
             .andExpect(jsonPath("$.totalElements").value(1));
 
-        mockMvc.perform(put("/api/v1/vaccinations/{id}", vaccinationId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(createVaccinationJson("V10", "LOTE-002")))
+        mockMvc.perform(patch("/api/v1/vaccinations/{id}", vaccinationId)
+                .contentType("application/merge-patch+json")
+                .content("""
+                    {
+                      "vaccineName": "V10",
+                      "vaccineBatchNumber": "LOTE-002"
+                    }
+                    """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(vaccinationId))
             .andExpect(jsonPath("$.petId").value(petId))
             .andExpect(jsonPath("$.vaccineName").value("V10"))
-            .andExpect(jsonPath("$.vaccineBatchNumber").value("LOTE-002"));
+            .andExpect(jsonPath("$.vaccineBatchNumber").value("LOTE-002"))
+            .andExpect(jsonPath("$.applicationDate").value("2026-01-15"))
+            .andExpect(jsonPath("$.nextVaccinationDate").value("2027-01-15"));
 
         mockMvc.perform(delete("/api/v1/vaccinations/{id}", vaccinationId))
             .andExpect(status().isNoContent());
@@ -123,6 +131,85 @@ class VaccinationControllerTest {
                 .content(createVaccinationJson("Antirrabica", "LOTE-001")))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.detail").value("Pet not found with id: -1"));
+    }
+
+    @Test
+    void shouldClearNextVaccinationDateWhenExplicitlySetToNull() throws Exception {
+        long petId = createPet();
+        String responseBody = mockMvc.perform(post("/api/v1/pets/{petId}/vaccinations", petId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createVaccinationJson("Antirrabica", "LOTE-001")))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        long vaccinationId = objectMapper.readTree(responseBody).get("id").asLong();
+
+        mockMvc.perform(patch("/api/v1/vaccinations/{id}", vaccinationId)
+                .contentType("application/merge-patch+json")
+                .content("{\"nextVaccinationDate\":null}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nextVaccinationDate").doesNotExist())
+            .andExpect(jsonPath("$.vaccineName").value("Antirrabica"))
+            .andExpect(jsonPath("$.vaccineBatchNumber").value("LOTE-001"));
+    }
+
+    @Test
+    void shouldRejectNullForRequiredVaccinationField() throws Exception {
+        long petId = createPet();
+        String responseBody = mockMvc.perform(post("/api/v1/pets/{petId}/vaccinations", petId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createVaccinationJson("Antirrabica", "LOTE-001")))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        long vaccinationId = objectMapper.readTree(responseBody).get("id").asLong();
+
+        mockMvc.perform(patch("/api/v1/vaccinations/{id}", vaccinationId)
+                .contentType("application/merge-patch+json")
+                .content("{\"vaccineName\":null}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.fieldErrors.vaccineName").exists());
+    }
+
+    @Test
+    void shouldDistinguishProvidedOmittedAndNullNextVaccinationDate() throws Exception {
+        long petId = createPet();
+        String responseBody = mockMvc.perform(post("/api/v1/pets/{petId}/vaccinations", petId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createVaccinationJson("Antirrabica", "LOTE-001")))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+        long vaccinationId = objectMapper.readTree(responseBody).get("id").asLong();
+
+        mockMvc.perform(patch("/api/v1/vaccinations/{id}", vaccinationId)
+                .contentType("application/merge-patch+json")
+                .content("{\"nextVaccinationDate\":\"2028-01-15\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nextVaccinationDate").value("2028-01-15"));
+
+        mockMvc.perform(patch("/api/v1/vaccinations/{id}", vaccinationId)
+                .contentType("application/merge-patch+json")
+                .content("{\"vaccineName\":\"V10\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.vaccineName").value("V10"))
+            .andExpect(jsonPath("$.nextVaccinationDate").value("2028-01-15"));
+
+        mockMvc.perform(patch("/api/v1/vaccinations/{id}", vaccinationId)
+                .contentType("application/merge-patch+json")
+                .content("{}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nextVaccinationDate").value("2028-01-15"));
+
+        mockMvc.perform(patch("/api/v1/vaccinations/{id}", vaccinationId)
+                .contentType("application/merge-patch+json")
+                .content("{\"nextVaccinationDate\":null}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nextVaccinationDate").value(nullValue()))
+            .andExpect(jsonPath("$.vaccineName").value("V10"));
     }
 
     @Test

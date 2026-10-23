@@ -2,6 +2,7 @@ package com.juliany.vaccinationpet.service;
 
 import com.juliany.vaccinationpet.dto.CreatePetRequest;
 import com.juliany.vaccinationpet.dto.PageResponse;
+import com.juliany.vaccinationpet.dto.PatchPetRequest;
 import com.juliany.vaccinationpet.dto.PetResponse;
 import com.juliany.vaccinationpet.entity.Pet;
 import com.juliany.vaccinationpet.exception.ResourceNotFoundException;
@@ -21,10 +22,16 @@ public class PetService {
 
     private final PetRepository petRepository;
     private final PetMapper petMapper;
+    private final RequestValidationService requestValidationService;
 
-    public PetService(PetRepository petRepository, PetMapper petMapper) {
+    public PetService(
+            PetRepository petRepository,
+            PetMapper petMapper,
+            RequestValidationService requestValidationService
+    ) {
         this.petRepository = petRepository;
         this.petMapper = petMapper;
+        this.requestValidationService = requestValidationService;
     }
 
     @Transactional
@@ -52,9 +59,27 @@ public class PetService {
     }
 
     @Transactional
-    public PetResponse update(Long id, CreatePetRequest request) {
+    public PetResponse update(Long id, PatchPetRequest patch) {
         Pet pet = findPetById(id);
-        petMapper.updateEntity(pet, request);
+        PatchPetRequest.PatchOwnerRequest ownerPatch = patch.getOwner();
+        CreatePetRequest.OwnerRequest owner = !patch.isOwnerProvided()
+                ? new CreatePetRequest.OwnerRequest(pet.getOwner().name(), pet.getOwner().contact())
+                : ownerPatch == null
+                        ? null
+                        : new CreatePetRequest.OwnerRequest(
+                                ownerPatch.isNameProvided() ? ownerPatch.getName() : pet.getOwner().name(),
+                                ownerPatch.isContactProvided() ? ownerPatch.getContact() : pet.getOwner().contact()
+                        );
+
+        CreatePetRequest mergedRequest = new CreatePetRequest(
+                patch.isNameProvided() ? patch.getName() : pet.getName(),
+                patch.isSpeciesProvided() ? patch.getSpecies() : pet.getSpecies(),
+                patch.isSexProvided() ? patch.getSex() : pet.getSex(),
+                patch.isBirthdateProvided() ? patch.getBirthdate() : pet.getBirthdate(),
+                owner
+        );
+        requestValidationService.validate(mergedRequest);
+        petMapper.updateEntity(pet, mergedRequest);
         Pet updatedPet = petRepository.saveAndFlush(pet);
         return petMapper.toResponse(updatedPet);
     }

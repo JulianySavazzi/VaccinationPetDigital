@@ -2,6 +2,7 @@ package com.juliany.vaccinationpet.controller;
 
 import com.juliany.vaccinationpet.dto.CreateVaccinationRequest;
 import com.juliany.vaccinationpet.dto.PageResponse;
+import com.juliany.vaccinationpet.dto.PatchVaccinationRequest;
 import com.juliany.vaccinationpet.dto.VaccinationResponse;
 import com.juliany.vaccinationpet.service.VaccinationService;
 import jakarta.validation.Valid;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,10 +52,10 @@ public class VaccinationController {
         return ResponseEntity.ok(vaccinationService.findById(id));
     }
 
-    @PutMapping("/vaccinations/{id}")
+    @PatchMapping(value = "/vaccinations/{id}", consumes = "application/merge-patch+json")
     public ResponseEntity<VaccinationResponse> update(
             @PathVariable Long id,
-            @Valid @RequestBody CreateVaccinationRequest request
+            @RequestBody PatchVaccinationRequest request
     ) {
         return ResponseEntity.ok(vaccinationService.update(id, request));
     }
